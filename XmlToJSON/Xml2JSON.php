@@ -10,7 +10,6 @@ class  Xml2JSON{
         $this -> $url = $url;
     }
 
-
     /*
      * general function
     * @url - силка на xml файл
