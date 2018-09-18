@@ -8,6 +8,7 @@
 
 require_once ("DB.php");
 require_once ("../classes/reader.php");
+require_once ("../classes/scanner.php");
 
 
 $dirName = "create";

@@ -6,46 +6,55 @@
  * Time: 01:41
  */
 
-$ob = new hui("vadik");
+$ob = new Scanner("../local_dir");
+
 $arr = array();
-$ob->f("vadik",$arr);
-$ob->g($arr);
-echo $ob->g($arr);
+$ob->scanning( );
+//$ob->files_details($arr);
+//echo $ob->files_details($arr);
 
 class Scanner
 {
-    public $s;
+    public $size;
     public $filetime;
     public $strDate;
-    private $arr;
-    private $dir;
-    public function __construct($dir)
+    private $list_file = array();
+    private $direct;
+
+    public function __construct($direct)
     {
-        $this->dir = $dir;
+       $this->direct = $direct;
     }
 
-    public function f($dir, &$arr){
-        $d = scandir($this->dir);
-        foreach ($d as $q) {
-            if ($q != "." & $q != "..") {
-                if (is_dir($this->dir . "/" . $q)) {
-                    $this->f($this->dir . "/" . $q, $arr);
+    public function scanning($direct = "", $list_file = array()){
+
+
+        $this->list_file = $list_file;
+        $scan = scandir($this->direct);
+        var_dump($scan);
+       /*foreach ($scan as $item) {
+            if ( ($item != ".") & $item != "..") {
+                if (is_dir($direct . "/" . $item)) {
+                    $this->scanning($direct."/".$item, $this->list_file);
                 } else {
-                    $arr[] = $this->dir . "/" . $q;
+                    $this->list_file[] = $direct . "/" . $item;
                 }
             }
         }
+        var_dump($this->list_file);*/
     }
 
-    public function g($arr)
+    public function files_details($list_file)
     {
-        foreach ($arr as $a) {
-            $s = filesize($a);
+        foreach ($list_file as $a) {
+            $size = filesize($a);
             $filetime = filemtime($a);
             $strDate = date("Y-m-d H:i:s", $filetime);
-            echo $s;
+            var_dump($filetime);
+            /*echo $size;
             echo $strDate;
-            echo $filetime;
+            echo $filetime;*/
+
         }
     }
 }
