@@ -5,57 +5,46 @@
  * Date: 16.09.2018
  * Time: 01:41
  */
-
-$ob = new Scanner("../local_dir");
-
-$arr = array();
-$ob->scanning( );
-//$ob->files_details($arr);
-//echo $ob->files_details($arr);
-
-class Scanner
-{
-    public $size;
-    public $filetime;
-    public $strDate;
-    private $list_file = array();
+class Scanner{
+    private $list_file ;
     private $direct;
 
-    public function __construct($direct)
-    {
-       $this->direct = $direct;
+    function __construct($direct = "../local_dir" ){
+        $this->direct = $direct;
     }
 
-    public function scanning($direct = "", $list_file = array()){
+    public function scanning( $direct ){
+        $scan = scandir($direct);
 
-
-        $this->list_file = $list_file;
-        $scan = scandir($this->direct);
-        var_dump($scan);
-       /*foreach ($scan as $item) {
-            if ( ($item != ".") & $item != "..") {
-                if (is_dir($direct . "/" . $item)) {
-                    $this->scanning($direct."/".$item, $this->list_file);
-                } else {
-                    $this->list_file[] = $direct . "/" . $item;
+             foreach ($scan as $item){
+                if ( ($item != ".") & ($item != "..")){
+                    if (is_dir($direct . "/" . $item)){
+                        $this->scanning($direct."/".$item);
+                        $this->list_file[]['type'] = 0;
+                }
+                else{
+                     $this->file_details($direct . "/" . $item);
+                    $this->list_file[]['type'] = 1;
+                }
                 }
             }
-        }
-        var_dump($this->list_file);*/
     }
 
-    public function files_details($list_file)
-    {
-        foreach ($list_file as $a) {
-            $size = filesize($a);
-            $filetime = filemtime($a);
-            $strDate = date("Y-m-d H:i:s", $filetime);
-            var_dump($filetime);
-            /*echo $size;
-            echo $strDate;
-            echo $filetime;*/
-
-        }
+    public function file_details($patch){
+        $this->list_file[]['patch']= $patch;
+        $this->list_file[]['last_edit'] = filemtime($patch) ;
+        $this->list_file[]['size']= filesize($patch);
+        $this->list_file[]['last_scan']= time();
     }
+
+    public function set_direct($direct){
+        $this->direct = $direct;
+    }
+
+    public function get_list_files(){
+        $this->scanning($this->direct);
+        return $this->list_file;
+    }
+
 }
 ?>
