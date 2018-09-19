@@ -202,10 +202,8 @@ class Controller{
 
 
     public function compare($item1 = array(), $item2 = array()) {
-        echo "<h1>item1</h1> ";
-        var_dump($item1);
-        echo "<h1>item2</h1> ";
-        var_dump($item2);
+       $item1['patch'] = str_replace(array("../SERVER","../FTP"), array("",""),$item1['patch']);
+       $item2['patch'] = str_replace(array("../SERVER","../FTP"), array("",""),$item2['patch']);
         foreach ($item1 as $key => $value) {
             if($item2[$key] != $value) return false;
         }
