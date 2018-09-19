@@ -8,6 +8,7 @@
 class Scanner{
     private $list_file ;
     private $direct;
+    public $index = 0;
 
     function __construct($direct = "../local_dir" ){
         $this->direct = $direct;
@@ -16,26 +17,30 @@ class Scanner{
     public function scanning( $direct ){
         $scan = scandir($direct);
 
+
              foreach ($scan as $item){
                 if ( ($item != ".") & ($item != "..")){
                     if (is_dir($direct . "/" . $item)){
                         $this->scanning($direct."/".$item);
-                        $this->list_file[]['type'] = 0;
+                        $this->file_details($this->index, $direct . "/" . $item);
+                        $this->list_file[$this->index]['type'] = 0;
+                        $this->index++;
                 }
                 else{
-                     $this->file_details($direct . "/" . $item);
-                    $this->list_file[]['type'] = 1;
+                     $this->file_details($this->index, $direct . "/" . $item);
+                    $this->list_file[$this->index]['type'] = 1;
+                    $this->index++;
                 }
                 }
             }
     }
 
-    public function file_details($patch){
-        $this->list_file[]['hash']= md5("$patch");
-        $this->list_file[]['patch']= $patch;
-        $this->list_file[]['last_edit'] = filemtime($patch) ;
-        $this->list_file[]['size']= filesize($patch);
-        $this->list_file[]['last_scan']= time();
+    public function file_details($index = 0, $patch){
+        $this->list_file[$index]['hash']= md5("$patch");
+        $this->list_file[$index]['patch']= $patch;
+        $this->list_file[$index]['last_edit'] = filemtime($patch) ;
+        $this->list_file[$index]['size']= filesize($patch);
+        $this->list_file[$index]['last_scan']= time();
     }
 
     public function set_direct($direct){
