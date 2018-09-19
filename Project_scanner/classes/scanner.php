@@ -31,6 +31,7 @@ class Scanner{
     }
 
     public function file_details($patch){
+        $this->list_file[]['hash']= md5("$patch");
         $this->list_file[]['patch']= $patch;
         $this->list_file[]['last_edit'] = filemtime($patch) ;
         $this->list_file[]['size']= filesize($patch);
