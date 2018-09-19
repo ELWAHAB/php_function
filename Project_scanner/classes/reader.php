@@ -12,10 +12,10 @@ class Reader{
 
     public function add_file($patch = ""){
              fopen($patch, 'w');
-    }
+    } //todo
 
     public function add_dir($patch = ""){
-        mkdir($patch, 0700);
+        mkdir($patch, 0755);
    }
 
     public function del_file($patch = ""){
@@ -23,38 +23,60 @@ class Reader{
     }
 
     public function del_dir($patch = ""){
+        $dirs = scandir($patch);
+        foreach ($dirs as $dir) {
+            if($dir != "." & $dir != "..") {
+                $this->del_file($dir);
+            }
+
+        }
         rmdir($patch);
     }
 
-    public function del_item($hash = ""){
+    public function del_item($id = 0){
 
-        $sql = DB::query( "DELETE FROM scan WHERE hash = $hash ");
-        DB::query($sql) or die;
+        $sql = DB::query( "DELETE FROM scan WHERE hash = $id ");
+        DB::query($sql) or die("Проблемы Хьюстон");
     }
 
     public function add_item($array = array()){
-        $hash = $array[0];
-        $patch = $array[1];
-        $type = $array[2];
-        $last_edit = $array[3];
-        $size = $array[4];
-        $last_scan = $array[5];
-
+        $hash      = $array['hash'];
+        $patch     = $array['patch'];
+        $type      = $array['type'];
+        $last_edit = $array['last_edit'];
+        $size      = $array['size'];
+        $last_scan = $array['last_scan'];
         $query = "INSERT INTO scan(hash, patch, type, last_edit, size, last_scan)   VALUES ('$hash', '$patch', '$type', '$last_edit', '$size', '$last_scan')";
         DB::query($query);
     }
 
-    public function update_list($update = array(), $id){
+    public function update_list($item = array(), $id)
+    {
+        $data = "";
+        foreach ($item as $key => $value) {
+            $data .= $key . "='" . $value . "',";
+        }
+        $sql = "UPDATE scan SET " . mb_substr($data, 0, -1) . " WHERE id = " . $id;
+        DB::query($sql);
+    }
 
-        $hash = $update[0];
-        $patch = $update[1];
-        $type = $update[2];
-        $last_edit = $update[3];
-        $size = $update[4];
-        $last_scan = $update[5];
 
-        $query = "UPDATE scan SET hash='$hash', patch ='$patch', type='$type', last_edit='$last_edit', size='$size', last_scan='$last_scan' WHERE id='$id' ";
-        DB::query($query);
+    public function getItemID($hash = "", $patch = "") {
+        $sql = "SELECT id FROM scan WHERE hash = '$hash' AND patch = '$patch'";
+        $result = DB::query($sql);
+        return ($result->fetch_object())->id;
+    }
+
+    public function updateItem($item = array()) {
+        $hash = $item['hash'];
+        $patch = $item['patch'];
+       $id = $this->getItemID($hash,$patch);
+
+        if($id > 0) {
+            $this->update_list($item, (int)$id);
+        } else {
+            $this->add_item($item);
+        }
     }
 
     public function rd($update = array()){
@@ -73,8 +95,7 @@ class Reader{
                     $id_count = (int)$value;
                 }
             }
-            $content = file_get_contents($patch);
-            file_put_contents($patch, $content);
+
 
             $this->update_list($update, (int)$id_count);
         } else {
@@ -82,5 +103,8 @@ class Reader{
             $this->add_item($update);
         }
     }
+
+
+
 }
 ?>

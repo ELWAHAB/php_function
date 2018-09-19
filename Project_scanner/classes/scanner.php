@@ -10,14 +10,12 @@ class Scanner{
     private $direct;
     public $index = 0;
 
-    function __construct($direct = "../local_dir" ){
+    function __construct($direct = "../FTP" ){
         $this->direct = $direct;
     }
 
     public function scanning( $direct ){
         $scan = scandir($direct);
-
-
              foreach ($scan as $item){
                 if ( ($item != ".") & ($item != "..")){
                     if (is_dir($direct . "/" . $item)){
@@ -34,9 +32,12 @@ class Scanner{
                 }
             }
     }
-
     public function file_details($index = 0, $patch){
-        $this->list_file[$index]['hash']= md5("$patch");
+        if(!is_dir($patch)) {
+            $this->list_file[$index]['hash']= md5(file_get_contents($patch));
+        } else {
+            $this->list_file[$index]['hash']= md5($patch);
+        }
         $this->list_file[$index]['patch']= $patch;
         $this->list_file[$index]['last_edit'] = filemtime($patch) ;
         $this->list_file[$index]['size']= filesize($patch);

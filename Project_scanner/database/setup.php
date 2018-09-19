@@ -15,6 +15,7 @@ $dirName = "create";
 
 $dirFiles = scandir($dirName);
 
+
 foreach ($dirFiles as $file){
     if (($file !='.') & ($file != '..')) {
         DB::createTable($file);
