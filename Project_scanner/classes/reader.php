@@ -35,7 +35,7 @@ class Reader{
 
     public function del_item($id = 0){
 
-        $sql = DB::query( "DELETE FROM scan WHERE hash = $id ");
+        $sql = DB::query( "DELETE FROM scan WHERE id = $id ");
         DB::query($sql) or die("Проблемы Хьюстон");
     }
 
@@ -96,7 +96,6 @@ class Reader{
                 }
             }
 
-
             $this->update_list($update, (int)$id_count);
         } else {
             $this->add_file($patch);
@@ -104,6 +103,11 @@ class Reader{
         }
     }
 
+    public function getBD(){
+        $query = "SELECT id,hash,patch,type,last_edit,size, last_scan  FROM scan";
+        $sql = DB::query($query);
+        return $sql;
+    }
 
 
 }

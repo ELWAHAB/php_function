@@ -8,19 +8,17 @@
 
 $controller = new Controller();
 
-$reader = new Reader();
+$controller->synchronizerBD();
+//$controller->delete_not_exists_file();
 
-$server = $controller->getListFileSERVER();
+/*$server = $controller->getListFileSERVER();
 
 $ftp = $controller->getListFileFTP();
-
-
 
 foreach ($ftp as $f) {
     $patch = str_replace("../FTP","",$f['patch']);
 
     $transit = $controller->findItemByPatchFTP($server,$patch);
-
 
     if($transit) {
         $comp = $controller->compare($transit,$f);
@@ -49,120 +47,85 @@ foreach ($ftp as $f) {
 
 
     }
-}
-
-
-/*
-
-foreach ($server as $s) {
+}*/
+/*foreach ($server as $s) {
     $patch = str_replace("../SERVER","",$s['patch']);
+
     $transit = $controller->findItemByPatchSERVER($ftp,$patch);
 
-    if(!$transit) {
-        $id = $reader->getItemID($s['hash'],$s['patch']);
-        $reader->del_item($id);
-        $reader->del_file($s['patch']);
+
+    if($transit) {
+        $comp = $controller->compare($transit,$s);
+        if(!$comp) {
+            $reader->updateItem($s);
+            $ftpFile = $transit['patch'];
+            $serverFile = $s['patch'];
+            if(!is_dir($serverFile)) {
+                file_put_contents(
+                    $ftpFile,
+                    file_get_contents($serverFile));
+            }
+        }
+    } else {
+        $reader->add_item($s);
+        $serverFile = $s['patch'];
+        $ftpFile = str_replace("../SERVER","../FTP",$serverFile);
+
+        if(!is_dir($serverFile)) {
+            file_put_contents(
+                $ftpFile,
+                file_get_contents($serverFile));
+        } else {
+            $reader->add_dir($ftpFile);
+        }
+
+
     }
-}
-
-
-
-
-*/
-
-
-
-
-/*foreach ($list as $item){
-    foreach ()
-    var_dump($item);
-    echo "<hr/>";
 }*/
-
-
-
 class Controller{
-
-    public $hash;
-    public $patch;
-    public $type;
-    public $last_edit;
-    public $size;
-    public $last_scan;
-    public $listForBD;
-    public $list_sort;
 
     public function getListFileFTP(){
         $scan = new Scanner("../FTP");
         $list_file = $scan ->get_list_files();
         return $list_file;
     }
+
     public function getListFileSERVER(){
         $scan = new Scanner("../SERVER");
         $list_file = $scan ->get_list_files();
         return $list_file;
     }
-    public function sortFileList(){
-        $list_FTP = $this->getListFileFTP();
-        $list_SERVER = $this->getListFileSERVER();
-        $index = 0;
-        var_dump($list_FTP);
-        echo "<hr/>";
-        var_dump($list_SERVER);
 
-        foreach ($list_SERVER as $keySERVER => $valueSERVER){
+    public function delete_not_exists_file(){
+        $list_FTP = $this->getListFileFTP();
+        $reader = new Reader();
+        $list_BD = $reader->getBD();
+
+        foreach ($list_BD as $key => $value_BD){
+
             $flag = false;
 
-            foreach ($list_FTP as $keyFTP => $valueFTP){
-                if ( ($keyFTP == 'hash') & ($keySERVER == 'hash') ){
-                    if ($valueFTP == $valueSERVER){
-                        $flag = true;
-                    }
+            foreach ($list_FTP as $value_FTP){
+               if ($value_FTP['patch'] == $value_BD['patch']){
+                    $flag = true;
                 }
             }
-            if (!($flag)){
-                 $this->list_sort[$index] = $keySERVER;
-                 $index++;
+            if ( !$flag){
+                $delete_file = str_replace("../FTP","../SERVER",$value_BD['patch']);
+                if ((boolean)$value_BD['type']){
+
+                    $reader->del_file($delete_file);
+                }else{
+                    $reader->del_dir($delete_file);
+                }
+                $reader->del_item($value_BD['id']);
             }
+
         }
 
 
-    }
-
-    public function writeBD(){
-        $list_file = $this->getListFileFTP();
-
-        foreach ($list_file as $item){
-            $this->set_list($item);
-            /*
-            foreach ($item as $key => $value) {
-                switch ($key) {
-                    case $key == 'hash':
-                        $this->hash = $value;
-                        break;
-                    case $key == 'patch':
-                        $this->patch = $value;
-                        break;
-                    case $key == 'last_edit':
-                        $this->last_edit = $value;
-                        break;
-                    case $key == 'size':
-                        $this->size = $value;
-                        break;
-                    case $key == 'last_scan':
-                        $this->last_scan = $value;
-                        break;
-                    case $key == 'type':
-                        $this->type = $value;
-                        $this->listForBD = array($this->hash, $this->patch, $this->type, $this->last_edit, $this->size, $this->last_scan);
 
 
-                        $this->listForBD = null;
-                        break;
-                }
-            }
-            */
-        }
     }
 
     public function findItemByPatchFTP($items = array(), $patch = "") {
@@ -194,13 +157,6 @@ class Controller{
         return false;
     }
 
-
-    public function set_list($list){
-        $reader = new Reader();
-        $reader->updateItem($list);
-    }
-
-
     public function compare($item1 = array(), $item2 = array()) {
        $item1['patch'] = str_replace(array("../SERVER","../FTP"), array("",""),$item1['patch']);
        $item2['patch'] = str_replace(array("../SERVER","../FTP"), array("",""),$item2['patch']);
@@ -211,6 +167,50 @@ class Controller{
         return true;
     }
 
+    public function synchronizerBD(){
 
+        $reader = new Reader();
+
+        $server = $this->getListFileSERVER();
+
+        $ftp = $this->getListFileFTP();
+
+        foreach ($ftp as $f) {
+            $patch = str_replace("../FTP","",$f['patch']);
+
+            $transit = $this->findItemByPatchFTP($server,$patch);
+
+            if($transit) {
+                $comp = $this->compare($transit,$f);
+                if(!$comp) {
+                    $reader->updateItem($f);
+                    $serverFile = $transit['patch'];
+                    $ftpFile = $f['patch'];
+                    if(!is_dir($ftpFile)) {
+                        file_put_contents(
+                            $serverFile,
+                            file_get_contents($ftpFile));
+                    }
+                }
+            } else {
+                $reader->add_item($f);
+                $ftpFile = $f['patch'];
+                $serverFile = str_replace("../FTP","../SERVER",$ftpFile);
+
+                if(!is_dir($ftpFile)) {
+                    file_put_contents(
+                        $serverFile,
+                        file_get_contents($ftpFile));
+                } else {
+                    $reader->add_dir($serverFile);
+                }
+
+
+            }
+        }
+
+
+        $this->delete_not_exists_file();
+    }
 }
 ?>
