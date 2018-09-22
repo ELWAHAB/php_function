@@ -84,6 +84,9 @@ foreach ($ftp as $f) {
 }*/
 class Controller{
 
+    public $list_not_exists_file;
+    public $list_not_exists_dir;
+
     public function getListFileFTP(){
         $scan = new Scanner("../FTP");
         $list_file = $scan ->get_list_files();
@@ -100,7 +103,7 @@ class Controller{
         $list_FTP = $this->getListFileFTP();
         $reader = new Reader();
         $list_BD = $reader->getBD();
-
+        //find all not exists file and dir
         foreach ($list_BD as $key => $value_BD){
 
             $flag = false;
@@ -111,21 +114,29 @@ class Controller{
                 }
             }
             if ( !$flag){
-                $delete_file = str_replace("../FTP","../SERVER",$value_BD['patch']);
-                if ((boolean)$value_BD['type']){
-
-                    $reader->del_file($delete_file);
+                if ((boolean) $value_BD['type']) {
+                    $this->list_not_exists_file[] = $value_BD;
                 }else{
-                    $reader->del_dir($delete_file);
-                }
-                $reader->del_item($value_BD['id']);
+                    $this->list_not_exists_dir[] = $value_BD;
             }
-
+            }
         }
-
-
-
-
+        //delete all not exists files
+        if ($this->list_not_exists_file !== null){
+        foreach ($this->list_not_exists_file as $value_BD){
+            $delete_file = str_replace("../FTP","../SERVER",$value_BD['patch']);
+            $reader->del_file($delete_file);
+            $reader->del_item( (int) $value_BD['id']);
+        }
+        }
+        //delete all not exists dir
+        if ($this->list_not_exists_dir !== null) {
+            foreach ($this->list_not_exists_dir as $value_BD){
+                $delete_file = str_replace("../FTP","../SERVER",$value_BD['patch']);
+                $reader->del_dir($delete_file);
+                $reader->del_item( (int) $value_BD['id']);
+            }
+        }
     }
 
     public function findItemByPatchFTP($items = array(), $patch = "") {
@@ -204,12 +215,8 @@ class Controller{
                 } else {
                     $reader->add_dir($serverFile);
                 }
-
-
             }
         }
-
-
         $this->delete_not_exists_file();
     }
 }

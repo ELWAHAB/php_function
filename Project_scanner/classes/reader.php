@@ -33,10 +33,10 @@ class Reader{
         rmdir($patch);
     }
 
-    public function del_item($id = 0){
-
-        $sql = DB::query( "DELETE FROM scan WHERE id = $id ");
+    public function del_item( $id = 0){
+        $sql = "DELETE  FROM scan WHERE id = '$id' ";
         DB::query($sql) or die("Проблемы Хьюстон");
+
     }
 
     public function add_item($array = array()){
