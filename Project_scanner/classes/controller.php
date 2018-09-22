@@ -9,6 +9,8 @@
 $controller = new Controller();
 
 $controller->synchronizerBD();
+//$controller->patchs = "../FTP/proSto/rrererer/bdjdj/skjjnd/dsds/dsd/sfsfs.txt";
+//$controller->existDir("../FTP/example/rrererer/bdjdj/skjjnd/dsds/dsd/sfsfs.txt");
 //$controller->delete_not_exists_file();
 
 /*$server = $controller->getListFileSERVER();
@@ -94,8 +96,8 @@ class Controller{
     }
 
     public function getListFileSERVER(){
-        $scan = new Scanner("../SERVER");
-        $list_file = $scan ->get_list_files();
+        $reader = new Reader();
+        $list_file =  $reader->getBD();
         return $list_file;
     }
 
@@ -105,7 +107,6 @@ class Controller{
         $list_BD = $reader->getBD();
         //find all not exists file and dir
         foreach ($list_BD as $key => $value_BD){
-
             $flag = false;
 
             foreach ($list_FTP as $value_FTP){
@@ -145,7 +146,7 @@ class Controller{
             return false;
         }
         foreach ($items as $item) {
-            $patch1 = str_replace("../SERVER","",$item['patch']);
+            $patch1 = str_replace("../FTP","",$item['patch']);
             if($patch1 == $patch) {
                 return $item;
             }
@@ -169,8 +170,8 @@ class Controller{
     }
 
     public function compare($item1 = array(), $item2 = array()) {
-       $item1['patch'] = str_replace(array("../SERVER","../FTP"), array("",""),$item1['patch']);
-       $item2['patch'] = str_replace(array("../SERVER","../FTP"), array("",""),$item2['patch']);
+       $item1['patch'] = str_replace("../FTP", "",$item1['patch']);
+       $item2['patch'] = str_replace("../FTP", "",$item2['patch']);
         foreach ($item1 as $key => $value) {
             if($item2[$key] != $value) return false;
         }
@@ -179,18 +180,12 @@ class Controller{
     }
 
     public function synchronizerBD(){
-
         $reader = new Reader();
-
         $server = $this->getListFileSERVER();
-
         $ftp = $this->getListFileFTP();
-
         foreach ($ftp as $f) {
             $patch = str_replace("../FTP","",$f['patch']);
-
             $transit = $this->findItemByPatchFTP($server,$patch);
-
             if($transit) {
                 $comp = $this->compare($transit,$f);
                 if(!$comp) {
@@ -204,20 +199,35 @@ class Controller{
                     }
                 }
             } else {
-                $reader->add_item($f);
+
                 $ftpFile = $f['patch'];
                 $serverFile = str_replace("../FTP","../SERVER",$ftpFile);
-
-                if(!is_dir($ftpFile)) {
+                if(!is_dir($serverFile)) {
+                   $this->existDir($serverFile);
                     file_put_contents(
                         $serverFile,
                         file_get_contents($ftpFile));
-                } else {
-                    $reader->add_dir($serverFile);
                 }
+                $reader->add_item($f);
             }
         }
-        $this->delete_not_exists_file();
+        $list_BD = $reader->getBD();
+        if ($list_BD !== null) {
+            $this->delete_not_exists_file();
+        }
+    }
+
+
+
+
+
+    public function existDir($patchs){
+        $dir = dirname($patchs);
+        if (!is_dir($dir)){
+            mkdir($dir, 0777, true);
+        }
+        return true;
     }
 }
+//echo "../FTP/pppjp/rrererer/sfsfs.txt";
 ?>

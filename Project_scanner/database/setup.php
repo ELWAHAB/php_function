@@ -11,6 +11,12 @@ require_once ("../classes/reader.php");
 require_once ("../classes/scanner.php");
 require_once ("../classes/controller.php");
 
+$reader = new Reader();
+$list_BD = $reader->getBD();
+if ($reader->getBD() !== null) {
+    require_once ("../classes/controller.php");
+}
+
 $dirName = "create";
 
 $dirFiles = scandir($dirName);

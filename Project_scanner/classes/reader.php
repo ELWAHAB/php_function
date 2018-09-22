@@ -108,7 +108,5 @@ class Reader{
         $sql = DB::query($query);
         return $sql;
     }
-
-
 }
 ?>
