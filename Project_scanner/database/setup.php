@@ -11,16 +11,9 @@ require_once ("../classes/reader.php");
 require_once ("../classes/scanner.php");
 require_once ("../classes/controller.php");
 
-$reader = new Reader();
-$list_BD = $reader->getBD();
-if ($reader->getBD() !== null) {
-    require_once ("../classes/controller.php");
-}
-
 $dirName = "create";
 
 $dirFiles = scandir($dirName);
-
 
 foreach ($dirFiles as $file){
     if (($file !='.') & ($file != '..')) {
@@ -28,3 +21,11 @@ foreach ($dirFiles as $file){
     }
 
 }
+   $reader = new Reader();
+    $list_BD = $reader->getBD();
+
+    if ($list_BD !== null) {
+        $controller = new Controller();
+        $controller->synchronizerBD();
+     }
+?>

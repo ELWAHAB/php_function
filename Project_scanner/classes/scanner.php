@@ -32,6 +32,7 @@ class Scanner{
                 }
             }
     }
+
     public function file_details($index = 0, $patch){
         if(!is_dir($patch)) {
             $this->list_file[$index]['hash']= md5(file_get_contents($patch));

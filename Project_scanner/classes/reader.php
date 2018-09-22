@@ -60,7 +60,6 @@ class Reader{
         DB::query($sql);
     }
 
-
     public function getItemID($hash = "", $patch = "") {
         $sql = "SELECT id FROM scan WHERE hash = '$hash' AND patch = '$patch'";
         $result = DB::query($sql);
