@@ -44,9 +44,6 @@ class Scanner{
                 $paths[] = $str;
             }
         }
-        print_r($paths);
-        echo "<hr>";
-        var_dump($this->list_file);
     }
 
     //функція для запису у масив файлів, які знаходяться в поточній директорії
@@ -56,7 +53,6 @@ class Scanner{
 
         foreach ($dir as $fileinfo) {
             if (!$fileinfo->isDot()) {
-            //    echo "<br>" . ($fileinfo->isDir() ? "Yes" : "No");
 
                 $this->file_details($this->index, $fileinfo);
 
@@ -68,26 +64,31 @@ class Scanner{
                     $this->list_file[$this->index]['type'] = 1;
                     $this->index++;
                 }
-                echo $this->list_file[$this->index]['type'];
+
                 $path = $patch . "/" . $fileinfo;
-                echo $path . "<hr>";
+                echo str_replace("\\", "/", $fileinfo->getPathname()) . "<hr>";
+
 
             }
 
         }
+        var_dump($this->list_file);
     }
 
 
-    public function file_details($index = 0, $patch)
+    public function file_details($index = 0, $fileinfo)
     {
-        if (!($patch->isDir())) {
-            $this->list_file[$index]['hash'] = file_get_contents((string)$patch);
+
+        $path = str_replace("\\","/",$fileinfo->getPathname());
+
+        if (!($fileinfo->isDir())) {
+            $this->list_file[$index]['hash'] = md5(file_get_contents($path));
         } else {
-            $this->list_file[$index]['hash'] = "hashDir/".$patch;
+            $this->list_file[$index]['hash'] = md5($path);
         }
-        $this->list_file[$index]['patch'] = (string)$patch;
-        $this->list_file[$index]['last_edit'] = $patch->getMTime();
-        $this->list_file[$index]['size'] =  $patch->getSize();
+        $this->list_file[$index]['patch'] = $path;
+        $this->list_file[$index]['last_edit'] = $fileinfo->getMTime();
+        $this->list_file[$index]['size'] =  $fileinfo->getSize();
         $this->list_file[$index]['last_scan'] = time();
     }
 
