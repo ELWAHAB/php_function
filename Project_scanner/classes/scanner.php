@@ -6,9 +6,11 @@
  * Time: 01:41
  */
 
-$scan = new Scanner();
+//$scan = new Scanner();
+//
+//$scan->scanDir();
 
-$scan->scanDir();
+
 
 class Scanner{
     private $list_file ;
@@ -21,17 +23,19 @@ class Scanner{
     }
 
 
-    public function scanDir(){
+    public function scanning($direct){
         $iter = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($this->direct, RecursiveDirectoryIterator::SKIP_DOTS),
+            new RecursiveDirectoryIterator($direct, RecursiveDirectoryIterator::SKIP_DOTS),
             RecursiveIteratorIterator::SELF_FIRST,
 // при блоке прав чтения не отвалится
             RecursiveIteratorIterator::CATCH_GET_CHILD // Ignore "Permission denied" (>>на которую у него нет прав на чтение)
         );
 
         echo "<hr>"."<hr>";
-        $this->getFileName($this->direct);
-        $paths = array($this->direct);
+
+        //записує в масив файли в головній директорії FTP
+        $this->getFileName($direct);
+        $paths = array($direct);
         foreach ($iter as $path => $dir) {
             if ($dir->isDir()) {
                 $str = str_replace("\\","/",$path);
@@ -41,44 +45,50 @@ class Scanner{
             }
         }
         print_r($paths);
-//        echo "<hr>";
-//        var_dump($paths);
+        echo "<hr>";
+        var_dump($this->list_file);
     }
 
-    public function getFileName($patch){
+    //функція для запису у масив файлів, які знаходяться в поточній директорії
+    public function getFileName($patch)
+    {
         $dir = new DirectoryIterator($patch);
 
         foreach ($dir as $fileinfo) {
             if (!$fileinfo->isDot()) {
-//                var_dump($fileinfo->getFilename());
-                echo "<br>".($fileinfo->isDir()?"Yes":"No");
-//                echo "<br>  ".$fileinfo." 111<br>";
-                if ($fileinfo->isDir()){
+            //    echo "<br>" . ($fileinfo->isDir() ? "Yes" : "No");
+
+                $this->file_details($this->index, $fileinfo);
+
+// вказуємо тип файлу: 0 - dir / 1 - file
+                if ($fileinfo->isDir()) {
                     $this->list_file[$this->index]['type'] = 0;
-                }else{
+                    $this->index++;
+                } else {
                     $this->list_file[$this->index]['type'] = 1;
+                    $this->index++;
                 }
                 echo $this->list_file[$this->index]['type'];
-                $path = $patch."/".$fileinfo;
-                echo $path."<hr>";
-//                $this->file_details($this->index, $fileinfo);
-//                  $this->index++;
+                $path = $patch . "/" . $fileinfo;
+                echo $path . "<hr>";
+
             }
 
         }
     }
 
 
-        public function file_details($index = 0, $patch){
-        if(!is_dir($patch)) {
-            $this->list_file[$index]['hash']= md5(file_get_contents($patch));
+    public function file_details($index = 0, $patch)
+    {
+        if (!($patch->isDir())) {
+            $this->list_file[$index]['hash'] = file_get_contents((string)$patch);
         } else {
-            $this->list_file[$index]['hash']= md5($patch);
+            $this->list_file[$index]['hash'] = "hashDir/".$patch;
         }
-        $this->list_file[$index]['patch']= $patch;
-        $this->list_file[$index]['last_edit'] = filemtime($patch) ;
-        $this->list_file[$index]['size']= filesize($patch);
-        $this->list_file[$index]['last_scan']= time();
+        $this->list_file[$index]['patch'] = (string)$patch;
+        $this->list_file[$index]['last_edit'] = $patch->getMTime();
+        $this->list_file[$index]['size'] =  $patch->getSize();
+        $this->list_file[$index]['last_scan'] = time();
     }
 
 //    public function scanning( $direct ){
@@ -116,10 +126,10 @@ class Scanner{
 //        $this->direct = $direct;
 //    }
 
-//    public function get_list_files(){
-//        $this->scanning($this->direct);
-//        return $this->list_file;
-//    }
+    public function get_list_files(){
+        $this->scanning($this->direct);
+        return $this->list_file;
+    }
 
 }
 ?>
