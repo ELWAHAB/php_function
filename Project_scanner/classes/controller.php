@@ -22,7 +22,7 @@ class Controller{
         return $list_file;
     }
 
-    public function delete_not_exists_file(){
+    /*public function delete_not_exists_file(){
         $list_FTP = $this->getListFileFTP();
         $reader = new Reader();
         $list_BD = $reader->getBD();
@@ -50,6 +50,56 @@ class Controller{
             $reader->del_file($delete_file);
             $reader->del_item( (int) $value_BD['id']);
         }
+        }
+        //delete all not exists dir
+        if ($this->list_not_exists_dir !== null) {
+            foreach ($this->list_not_exists_dir as $value_BD){
+                $delete_file = str_replace("../FTP","../SERVER",$value_BD['patch']);
+                $reader->del_dir($delete_file);
+                $reader->del_item( (int) $value_BD['id']);
+            }
+        }
+    }*/
+    public function delete_not_exists_file(){
+        $list_FTP = $this->getListFileFTP();
+        $reader = new Reader();
+        $list_BD = $reader->getBD();
+        //find all not exists file and dir
+        foreach ($list_BD as $key => $value_BD){
+            $flag = false;
+
+
+            foreach ($list_FTP as $value_FTP){
+                if ($value_FTP['patch'] == $value_BD['patch']){
+                    $flag = true;
+
+                    if ($value_FTP['hash'] != $value_BD['hash']){
+                        $value_BD['hash'] = $value_FTP['hash'];
+                        file_put_contents(
+                            str_replace("../FTP","../SERVER",$value_BD['patch']),
+                            file_get_contents($value_FTP['patch']));
+                    }
+                }
+
+            }
+
+            if ( !$flag){
+                if ((boolean) $value_BD['type']) {
+                    $this->list_not_exists_file[] = $value_BD;
+                }else{
+                    $this->list_not_exists_dir[] = $value_BD;
+                }
+            }
+        }
+
+
+        //delete all not exists files
+        if ($this->list_not_exists_file !== null){
+            foreach ($this->list_not_exists_file as $value_BD){
+                $delete_file = str_replace("../FTP","../SERVER",$value_BD['patch']);
+                $reader->del_file($delete_file);
+                $reader->del_item( (int) $value_BD['id']);
+            }
         }
         //delete all not exists dir
         if ($this->list_not_exists_dir !== null) {
