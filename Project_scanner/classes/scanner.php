@@ -5,24 +5,6 @@
  * Date: 16.09.2018
  * Time: 01:41
  */
-
-//$direct = "../FTP";
-//$scan = new Scanner();
-
-
-//$scan->record_dir($direct);
-//var_dump($scan->getListDir($direct));
-//$scan->directInf($direct);
-
-
-//var_dump($scan->getListDir($direct));
-//$scan->scanning($direct);
-//$scan->scanning($direct);
-//var_dump($scan->get_list_files());
-
-
-
-
 class Scanner{
     private $list_file ;
     private $direct;
@@ -37,7 +19,7 @@ class Scanner{
     // нові функції через ітератори для запису масив даних про файли
 
     // ------------- 3 -й варіант роботи з ітераторами -------------------------
-
+    // ----- Працює ------
      public function scanning($direct){
         $recursDir = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($direct,
             RecursiveDirectoryIterator::SKIP_DOTS),
@@ -58,7 +40,6 @@ class Scanner{
             }
         }
     }
-
 
     public function file_details($index = 0, $patch){
         if(!is_dir($patch)) {

@@ -75,6 +75,8 @@ class Controller{
 
                     if ($value_FTP['hash'] != $value_BD['hash']){
                         $value_BD['hash'] = $value_FTP['hash'];
+                        $reader->del_item( (int) $value_BD['id']);
+//                        $reader->add_item($value_BD);
                         file_put_contents(
                             str_replace("../FTP","../SERVER",$value_BD['patch']),
                             file_get_contents($value_FTP['patch']));
@@ -186,7 +188,6 @@ class Controller{
             $this->delete_not_exists_file();
         }
     }*/
-
     public function synchronizerBD(){
         $reader = new Reader();
         $server = $this->getListFileSERVER();

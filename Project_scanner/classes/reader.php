@@ -19,18 +19,38 @@ class Reader{
    }
 
     public function del_file($patch = ""){
+        if (file_exists($patch)){
          unlink($patch);
+        }
     }
 
-    public function del_dir($patch = ""){
+    /*public function del_dir($patch = ""){
         $dirs = scandir($patch);
+
         foreach ($dirs as $dir) {
             if($dir != "." & $dir != "..") {
                 $this->del_file($dir);
             }
 
         }
+        if (file_exists($patch)){
         rmdir($patch);
+        }
+    }*/
+    public function del_dir($patch = ""){
+        if (file_exists($patch)){
+        $files = array_diff(scandir($patch), ['.', '..']);
+
+        foreach ($files as $file) {
+            if (is_dir("$patch/$file")) {
+                $this->del_dir("$patch/$file");
+
+            } else {
+                unlink("$patch/$file");
+            }
+        }
+            rmdir($patch);
+        }
     }
 
     public function del_item( $id = 0){
