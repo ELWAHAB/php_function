@@ -21,12 +21,12 @@ foreach ($dirFiles as $file){
     }
 
 }
-//   $reader = new Reader();
-//    $list_BD = $reader->getBD();
-//
-//    if ($list_BD !== null) {
-//        $controller = new Controller();
-//        $controller->synchronizerBD();
-//     }
+   $reader = new Reader();
+    $list_BD = $reader->getBD();
+
+    if ($list_BD !== null) {
+        $controller = new Controller();
+        $controller->synchronizerBD();
+     }
 
 ?>

@@ -150,7 +150,7 @@ class Controller{
         return true;
     }
 
-    public function synchronizerBD(){
+    /*public function synchronizerBD(){
         $reader = new Reader();
         $server = $this->getListFileSERVER();
         $ftp = $this->getListFileFTP();
@@ -177,6 +177,46 @@ class Controller{
                     file_put_contents(
                         $serverFile,
                         file_get_contents($ftpFile));
+                }
+                $reader->add_item($f);
+            }
+        }
+        $list_BD = $reader->getBD();
+        if ($list_BD !== null) {
+            $this->delete_not_exists_file();
+        }
+    }*/
+
+    public function synchronizerBD(){
+        $reader = new Reader();
+        $server = $this->getListFileSERVER();
+        $ftp = $this->getListFileFTP();
+        foreach ($ftp as $f) {
+            $patch = str_replace("../FTP","",$f['patch']);
+            $transit = $this->findItemByPatchFTP($server,$patch);
+            if($transit) {
+                $comp = $this->compare($transit,$f);
+                if(!$comp) {
+                    $reader->updateItem($f);
+                    $serverFile = $transit['patch'];
+                    $ftpFile = $f['patch'];
+                    if(!is_dir($ftpFile)) {
+                        file_put_contents(
+                            $serverFile,
+                            file_get_contents($ftpFile));
+                    }
+                }
+            } else {
+                $ftpFile = $f['patch'];
+                $serverFile = str_replace("../FTP","../SERVER",$ftpFile);
+                if(!is_dir($ftpFile)) {
+                    $this->existDir($serverFile);
+                    file_put_contents(
+                        $serverFile,
+                        file_get_contents($ftpFile));
+                }else{
+                    $this->existDir($serverFile);
+                    mkdir($serverFile, 0777, true);
                 }
                 $reader->add_item($f);
             }
